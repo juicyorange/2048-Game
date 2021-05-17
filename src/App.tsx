@@ -2,15 +2,7 @@ import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useState } from 'react';
 import './App.css';
-import { findAllByPlaceholderText } from '@testing-library/dom';
-
-// 어떤 방향으로 밀때 배열의 가장 왼쪽 s, 그다음 f
-// [0 , 0 ,0 ,0]
-//  s   f
-// 1) number[s] == 0 number[f] == 0  -> f++
-// 2) number[s] != 0 number[f] == 0 => f++
-// 3) number[s] == 0 number[f] != 0 ->  number[s] = number[f] , s++ , f=s+1
-// 3) number[s] != 0 number[f] !=0 && number[s] == number[f] -> number[s] = number[s]+number[f], s++, f=s+1
+import { reverse } from 'dns';
 
 const Board = styled.div`
   background: #ad9d8f;
@@ -90,6 +82,283 @@ function App() {
     pushGrid[randomPush[0]][randomPush[1]] = pushNumber;
     return pushGrid;
   };
+
+  // 왼쪽으로 이동시키고, 값을 더한 Grid를 return. 내부에서 setGrid 사용하지 않는다.
+  const moveLeft = (inputGrid: number[][]) => {
+    let moveGrid: number[][] = [];
+
+    // 한쪽으로 몰아넣기
+    // 비어있는 것(0)이 있다면 row에 넣지 않고, 나머지는 넣는다.
+    // 이때 0의 개수를 count하고 나중에 그만큼 row에 push
+    for (let i = 0; i < inputGrid.length; i++) {
+      let row = [];
+      let empty_count = 0;
+      for (let j = 0; j < inputGrid[i].length; j++) {
+        let nowNumber = inputGrid[i][j];
+        if (nowNumber !== 0) {
+          row.push(nowNumber);
+        } else {
+          empty_count++;
+        }
+      }
+      // 0이 있던만큼 다시 0을 넣어준다.
+      for (let j = 0; j < empty_count; j++) {
+        row.push(0);
+      }
+      moveGrid.push(row);
+    }
+
+    // 같은 숫자가 있다면 결합하기
+    // [4,4,4,4], [4,2,2,0], [4,4,2,0], [4,2,4,4] 의 4가지 경우가 존재.
+    // 0의 경우는 신경쓰지 않아도 된다. 어차피 위에서 다 한쪽으로 몰아놔서 신경x
+    for (let i = 0; i < moveGrid.length; i++) {
+      // [4,4,4,4] 의 경우. 2개씩 짝을 이루어서 합쳐지는 것이 가능할때
+      if (
+        moveGrid[i][0] === moveGrid[i][1] &&
+        moveGrid[i][2] === moveGrid[i][3]
+      ) {
+        moveGrid[i][0] = moveGrid[i][0] * 2;
+        moveGrid[i][1] = moveGrid[i][2] * 2;
+        moveGrid[i][2] = 0;
+        moveGrid[i][3] = 0;
+      }
+      // [4,4,2,0] [4,4,0,0], [4,4,2,4] 의 경우
+      else if (moveGrid[i][0] === moveGrid[i][1]) {
+        moveGrid[i][0] = moveGrid[i][0] * 2;
+        moveGrid[i][1] = moveGrid[i][2];
+        moveGrid[i][2] = moveGrid[i][3];
+        moveGrid[i][3] = 0;
+      }
+      // [4,2,2,0], [4,2,2,4]
+      else if (moveGrid[i][1] === moveGrid[i][2]) {
+        moveGrid[i][1] = moveGrid[i][1] * 2;
+        moveGrid[i][2] = moveGrid[i][3];
+        moveGrid[i][3] = 0;
+      }
+      // [4,2,4,4] 의 경우
+      else if (moveGrid[i][2] === moveGrid[i][3]) {
+        moveGrid[i][2] = moveGrid[i][2] * 2;
+        moveGrid[i][3] = 0;
+      }
+    }
+
+    // test
+    setGrid(pushNumber(moveGrid));
+  };
+
+  const moveRight = (inputGrid: number[][]) => {
+    let moveGrid: number[][] = [];
+
+    // 한쪽으로 몰아넣기
+    // 비어있는 것(0)이 있다면 row에 넣지 않고, 나머지는 넣는다.
+    // 이때 0의 개수를 count하고 나중에 그만큼 row에 push
+    for (let i = 0; i < inputGrid.length; i++) {
+      let row = [];
+      let empty_count = 0;
+      for (let j = inputGrid[i].length - 1; j >= 0; j--) {
+        let nowNumber = inputGrid[i][j];
+        if (nowNumber !== 0) {
+          row.push(nowNumber);
+        } else {
+          empty_count++;
+        }
+      }
+      // 0이 있던만큼 다시 0을 넣어준다.
+      for (let j = 0; j < empty_count; j++) {
+        row.push(0);
+      }
+      let row_reversed = row.reverse();
+      moveGrid.push(row_reversed);
+    }
+
+    // 같은 숫자가 있다면 결합하기
+    // 3가지 경우가 존재
+    // [4,4,4,4], [0,2,4,4], [0,4,4,2], [4,4,2,4] 의 경우가 존재.
+    // 0의 경우는 신경쓰지 않아도 된다. 어차피 위에서 다 한쪽으로 몰아놔서 신경x
+    for (let i = 0; i < moveGrid.length; i++) {
+      // [4,4,4,4] 의 경우. 2개씩 짝을 이루어서 합쳐지는 것이 가능할때
+      if (
+        moveGrid[i][3] === moveGrid[i][2] &&
+        moveGrid[i][1] === moveGrid[i][0]
+      ) {
+        moveGrid[i][3] = moveGrid[i][3] * 2;
+        moveGrid[i][2] = moveGrid[i][1] * 2;
+        moveGrid[i][1] = 0;
+        moveGrid[i][0] = 0;
+      }
+      // [0,4,2,2], [0,0,2,2], [4,2,4,4] 의 경우
+      else if (moveGrid[i][3] === moveGrid[i][2]) {
+        moveGrid[i][3] = moveGrid[i][3] * 2;
+        moveGrid[i][2] = moveGrid[i][1];
+        moveGrid[i][1] = moveGrid[i][0];
+        moveGrid[i][0] = 0;
+      }
+      // [0,2,2,4], [4,2,2,4] 의 경우
+      else if (moveGrid[i][2] === moveGrid[i][1]) {
+        moveGrid[i][2] = moveGrid[i][2] * 2;
+        moveGrid[i][1] = moveGrid[i][0];
+        moveGrid[i][0] = 0;
+      }
+      // [4,4,2,4] 의 경우
+      else if (moveGrid[i][1] === moveGrid[i][0]) {
+        moveGrid[i][1] = moveGrid[i][1] * 2;
+        moveGrid[i][0] = 0;
+      }
+    }
+    // test
+    setGrid(pushNumber(moveGrid));
+  };
+
+  // 배열을 대각선으로 접는다.
+  const transpose = (matrix: number[][]) => {
+    for (let row = 0; row < matrix.length; row++) {
+      for (let column = 0; column < row; column++) {
+        let temp = matrix[row][column];
+        matrix[row][column] = matrix[column][row];
+        matrix[column][row] = temp;
+      }
+    }
+    return matrix;
+  };
+
+  // 배열 요소들 반대로
+  const reverse = (matrix: number[][]) => {
+    for (let i = 0; i < matrix.length; i++) {
+      matrix[i].reverse();
+    }
+    return matrix;
+  };
+
+  const moveUp = (inputGrid: number[][]) => {
+    let moveGrid: number[][] = [];
+
+    // 배열을 시계방향으로 회전시킨다.
+    inputGrid = reverse(transpose(inputGrid));
+    // 한쪽으로 몰아넣기
+    // 비어있는 것(0)이 있다면 row에 넣지 않고, 나머지는 넣는다.
+    // 이때 0의 개수를 count하고 나중에 그만큼 row에 push
+    for (let i = 0; i < inputGrid.length; i++) {
+      let row = [];
+      let empty_count = 0;
+      for (let j = inputGrid[i].length - 1; j >= 0; j--) {
+        let nowNumber = inputGrid[i][j];
+        if (nowNumber !== 0) {
+          row.push(nowNumber);
+        } else {
+          empty_count++;
+        }
+      }
+      // 0이 있던만큼 다시 0을 넣어준다.
+      for (let j = 0; j < empty_count; j++) {
+        row.push(0);
+      }
+      let row_reversed = row.reverse();
+      moveGrid.push(row_reversed);
+    }
+
+    // 같은 숫자가 있다면 결합하기
+    // 3가지 경우가 존재
+    // [4,4,4,4], [0,2,4,4], [0,4,4,2], [4,4,2,4] 의 경우가 존재.
+    // 0의 경우는 신경쓰지 않아도 된다. 어차피 위에서 다 한쪽으로 몰아놔서 신경x
+    for (let i = 0; i < moveGrid.length; i++) {
+      // [4,4,4,4] 의 경우. 2개씩 짝을 이루어서 합쳐지는 것이 가능할때
+      if (
+        moveGrid[i][3] === moveGrid[i][2] &&
+        moveGrid[i][1] === moveGrid[i][0]
+      ) {
+        moveGrid[i][3] = moveGrid[i][3] * 2;
+        moveGrid[i][2] = moveGrid[i][1] * 2;
+        moveGrid[i][1] = 0;
+        moveGrid[i][0] = 0;
+      }
+      // [0,4,2,2], [0,0,2,2], [4,2,4,4] 의 경우
+      else if (moveGrid[i][3] === moveGrid[i][2]) {
+        moveGrid[i][3] = moveGrid[i][3] * 2;
+        moveGrid[i][2] = moveGrid[i][1];
+        moveGrid[i][1] = moveGrid[i][0];
+        moveGrid[i][0] = 0;
+      }
+      // [0,2,2,4], [4,2,2,4] 의 경우
+      else if (moveGrid[i][2] === moveGrid[i][1]) {
+        moveGrid[i][2] = moveGrid[i][2] * 2;
+        moveGrid[i][1] = moveGrid[i][0];
+        moveGrid[i][0] = 0;
+      }
+      // [4,4,2,4] 의 경우
+      else if (moveGrid[i][1] === moveGrid[i][0]) {
+        moveGrid[i][1] = moveGrid[i][1] * 2;
+        moveGrid[i][0] = 0;
+      }
+    }
+    // test
+    moveGrid = transpose(reverse(moveGrid));
+    setGrid(pushNumber(moveGrid));
+  };
+
+  const moveDown = (inputGrid: number[][]) => {
+    let moveGrid: number[][] = [];
+
+    // 배열을 시계방향으로 회전시킨다.
+    inputGrid = reverse(transpose(inputGrid));
+    // 한쪽으로 몰아넣기
+    // 비어있는 것(0)이 있다면 row에 넣지 않고, 나머지는 넣는다.
+    // 이때 0의 개수를 count하고 나중에 그만큼 row에 push
+    for (let i = 0; i < inputGrid.length; i++) {
+      let row = [];
+      let empty_count = 0;
+      for (let j = 0; j < inputGrid[i].length; j++) {
+        let nowNumber = inputGrid[i][j];
+        if (nowNumber !== 0) {
+          row.push(nowNumber);
+        } else {
+          empty_count++;
+        }
+      }
+      // 0이 있던만큼 다시 0을 넣어준다.
+      for (let j = 0; j < empty_count; j++) {
+        row.push(0);
+      }
+      moveGrid.push(row);
+    }
+
+    // 같은 숫자가 있다면 결합하기
+    // [4,4,4,4], [4,2,2,0], [4,4,2,0], [4,2,4,4] 의 4가지 경우가 존재.
+    // 0의 경우는 신경쓰지 않아도 된다. 어차피 위에서 다 한쪽으로 몰아놔서 신경x
+    for (let i = 0; i < moveGrid.length; i++) {
+      // [4,4,4,4] 의 경우. 2개씩 짝을 이루어서 합쳐지는 것이 가능할때
+      if (
+        moveGrid[i][0] === moveGrid[i][1] &&
+        moveGrid[i][2] === moveGrid[i][3]
+      ) {
+        moveGrid[i][0] = moveGrid[i][0] * 2;
+        moveGrid[i][1] = moveGrid[i][2] * 2;
+        moveGrid[i][2] = 0;
+        moveGrid[i][3] = 0;
+      }
+      // [4,4,2,0] [4,4,0,0], [4,4,2,4] 의 경우
+      else if (moveGrid[i][0] === moveGrid[i][1]) {
+        moveGrid[i][0] = moveGrid[i][0] * 2;
+        moveGrid[i][1] = moveGrid[i][2];
+        moveGrid[i][2] = moveGrid[i][3];
+        moveGrid[i][3] = 0;
+      }
+      // [4,2,2,0], [4,2,2,4]
+      else if (moveGrid[i][1] === moveGrid[i][2]) {
+        moveGrid[i][1] = moveGrid[i][1] * 2;
+        moveGrid[i][2] = moveGrid[i][3];
+        moveGrid[i][3] = 0;
+      }
+      // [4,2,4,4] 의 경우
+      else if (moveGrid[i][2] === moveGrid[i][3]) {
+        moveGrid[i][2] = moveGrid[i][2] * 2;
+        moveGrid[i][3] = 0;
+      }
+    }
+    // test
+    moveGrid = transpose(reverse(moveGrid));
+    setGrid(pushNumber(moveGrid));
+  };
+
   return (
     <Board>
       {grid.map((row, rowIndex) => (
@@ -98,7 +367,7 @@ function App() {
             <Block
               key={`itemIndex-${itemIndex}`}
               style={{
-                color: item === 2 || item === 4 ? '#645B52' : '#F7F4EF',
+                background: item === 2 || item === 4 ? `#645B52` : `#F7F4EF`,
               }}
             >
               {item}
@@ -106,6 +375,10 @@ function App() {
           ))}
         </div>
       ))}
+      <div onClick={() => moveLeft(grid)}>moveleft-test</div>
+      <div onClick={() => moveRight(grid)}>moveRight-test</div>
+      <div onClick={() => moveUp(grid)}>moveUp-test</div>
+      <div onClick={() => moveDown(grid)}>moveDown-test</div>
     </Board>
   );
 }
