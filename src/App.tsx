@@ -9,7 +9,6 @@ import './App.css';
 // 화살표 이동 및 가능하다면 스와이프 이동 구현
 // 파일 쪼개기
 // 숫자 색상들
-// moveleft만 구현하고 나머지는 moveleft를 이용해서 돌리면서 구현하기(이때 배열 deepcopy)
 const Board = styled.div`
   background: #ad9d8f;
   width: max-content;
@@ -57,8 +56,8 @@ function App() {
     ];
     if (gameOver === true) {
       setGameOver(false);
-      setScore(0);
     }
+    setScore(0);
 
     // 처음에 2번 넣는다.
     newGrid = pushNumber(pushNumber(newGrid));
@@ -79,7 +78,6 @@ function App() {
     return blankGrid;
   };
 
-  // 게임판에 랜덤하게 넣고 반환.
   // 게임판이 꽉 찼다면 그냥 그대로 반환
   const pushNumber = (pushGrid: number[][]) => {
     const blankGrid: number[][] = getBlankGrid(pushGrid);
@@ -96,10 +94,9 @@ function App() {
   // 또한 지금은 각 이동을 하드코딩으로 구현했는데 이러면 나중에 판의 크기를 변경해는 것이
   // 불가능할 것. 추후에 반복문으로 돌아갈 수 있도록 만들자.
 
-  // 왼쪽으로 이동시키고, 값을 더한 Grid를 return.
-  const moveLeft = (inputGrid: number[][]) => {
-    let moveGrid: number[][] = [];
-
+  const leftPush = (inputGrid: number[][]) => {
+    let returnGrid: number[][] = [];
+    let addScore: number = 0;
     // 한쪽으로 몰아넣기
     // 비어있는 것(0)이 있다면 row에 넣지 않고, 나머지는 넣는다.
     // 이때 0의 개수를 count하고 나중에 그만큼 row에 push
@@ -118,44 +115,55 @@ function App() {
       for (let j = 0; j < empty_count; j++) {
         row.push(0);
       }
-      moveGrid.push(row);
+      returnGrid.push(row);
     }
 
     // 같은 숫자가 있다면 결합하기
     // [4,4,4,4], [4,2,2,0], [4,4,2,0], [4,2,4,4] 의 4가지 경우가 존재.
     // 0의 경우는 신경쓰지 않아도 된다. 어차피 위에서 다 한쪽으로 몰아놔서 신경x
-    for (let i = 0; i < moveGrid.length; i++) {
+    for (let i = 0; i < returnGrid.length; i++) {
       // [4,4,4,4] 의 경우. 2개씩 짝을 이루어서 합쳐지는 것이 가능할때
       if (
-        moveGrid[i][0] === moveGrid[i][1] &&
-        moveGrid[i][2] === moveGrid[i][3]
+        returnGrid[i][0] === returnGrid[i][1] &&
+        returnGrid[i][2] === returnGrid[i][3]
       ) {
-        moveGrid[i][0] = moveGrid[i][0] * 2;
-        moveGrid[i][1] = moveGrid[i][2] * 2;
-        moveGrid[i][2] = 0;
-        moveGrid[i][3] = 0;
+        returnGrid[i][0] = returnGrid[i][0] * 2;
+        returnGrid[i][1] = returnGrid[i][2] * 2;
+        returnGrid[i][2] = 0;
+        returnGrid[i][3] = 0;
+        addScore = returnGrid[i][0] + returnGrid[i][1];
       }
       // [4,4,2,0] [4,4,0,0], [4,4,2,4] 의 경우
-      else if (moveGrid[i][0] === moveGrid[i][1]) {
-        moveGrid[i][0] = moveGrid[i][0] * 2;
-        moveGrid[i][1] = moveGrid[i][2];
-        moveGrid[i][2] = moveGrid[i][3];
-        moveGrid[i][3] = 0;
+      else if (returnGrid[i][0] === returnGrid[i][1]) {
+        returnGrid[i][0] = returnGrid[i][0] * 2;
+        returnGrid[i][1] = returnGrid[i][2];
+        returnGrid[i][2] = returnGrid[i][3];
+        returnGrid[i][3] = 0;
+        addScore = returnGrid[i][0];
       }
       // [4,2,2,0], [4,2,2,4]
-      else if (moveGrid[i][1] === moveGrid[i][2]) {
-        moveGrid[i][1] = moveGrid[i][1] * 2;
-        moveGrid[i][2] = moveGrid[i][3];
-        moveGrid[i][3] = 0;
+      else if (returnGrid[i][1] === returnGrid[i][2]) {
+        returnGrid[i][1] = returnGrid[i][1] * 2;
+        returnGrid[i][2] = returnGrid[i][3];
+        returnGrid[i][3] = 0;
+        addScore = returnGrid[i][1];
       }
       // [4,2,4,4] 의 경우
-      else if (moveGrid[i][2] === moveGrid[i][3]) {
-        moveGrid[i][2] = moveGrid[i][2] * 2;
-        moveGrid[i][3] = 0;
+      else if (returnGrid[i][2] === returnGrid[i][3]) {
+        returnGrid[i][2] = returnGrid[i][2] * 2;
+        returnGrid[i][3] = 0;
+        addScore = returnGrid[i][2];
       }
     }
 
-    return moveGrid;
+    return { returnGrid, addScore };
+  };
+  // 왼쪽으로 이동시키고, 값을 더한 Grid를 return.
+  const moveLeft = (inputGrid: number[][]) => {
+    let moveGrid: number[][] = _.cloneDeep(inputGrid);
+    const { returnGrid, addScore } = leftPush(moveGrid);
+    const moveLeftGrid = _.cloneDeep(returnGrid);
+    return { moveLeftGrid, addScore };
   };
 
   // 오른쪽으로 이동시키고, 값을 더한 Grid를 return.
@@ -164,10 +172,11 @@ function App() {
     // 배열을 뒤집어준다.
     moveGrid = reverse(moveGrid);
     // 왼쪽으로 몰아주는 함수
-    moveGrid = moveLeft(moveGrid);
+    const { returnGrid, addScore } = leftPush(moveGrid);
+    moveGrid = _.cloneDeep(returnGrid);
     // 배열을 다시 뒤집는다.
-    moveGrid = reverse(moveGrid);
-    return moveGrid;
+    const moveRightGrid = reverse(moveGrid);
+    return { moveRightGrid, addScore };
   };
 
   // 시계방향으로 회전시키고, moveRight 한다음에 다시 반시계 회전시키면 된다.
@@ -176,10 +185,11 @@ function App() {
     // 배열을 반시계방향으로 회전시킨다.
     moveGrid = transpose(reverse(moveGrid));
     // 왼쪽으로 몰아주는 함수
-    moveGrid = moveLeft(moveGrid);
+    const { returnGrid, addScore } = leftPush(moveGrid);
+    moveGrid = _.cloneDeep(returnGrid);
     // 배열을 다시 시계방향으로 회전시킨다.
-    moveGrid = reverse(transpose(moveGrid));
-    return moveGrid;
+    const moveUpGrid = reverse(transpose(moveGrid));
+    return { moveUpGrid, addScore };
   };
 
   const moveDown = (inputGrid: number[][]) => {
@@ -187,10 +197,11 @@ function App() {
     // 배열을 시계방향으로 회전시킨다.
     moveGrid = reverse(transpose(moveGrid));
     // 왼쪽으로 몰아주는 함수
-    moveGrid = moveLeft(moveGrid);
+    const { returnGrid, addScore } = leftPush(moveGrid);
+    moveGrid = _.cloneDeep(returnGrid);
     // 배열을 다시 반시계방향으로 회전시킨다.
-    moveGrid = transpose(reverse(moveGrid));
-    return moveGrid;
+    const moveDownGrid = transpose(reverse(moveGrid));
+    return { moveDownGrid, addScore };
   };
 
   // 배열을 대각선으로 접는다.
@@ -214,16 +225,27 @@ function App() {
 
   // 오른쪽 왼쪽 위 아래 모두 이동시켜보았을때 이전의 gird랑 같으면 더이상 움직일 수 없다는 것
   const isGameOver = (inputGrid: number[][]) => {
-    if (JSON.stringify(moveLeft(inputGrid)) !== JSON.stringify(inputGrid)) {
+    if (
+      JSON.stringify(moveLeft(inputGrid).moveLeftGrid) !==
+      JSON.stringify(inputGrid)
+    ) {
       return false;
     }
-    if (JSON.stringify(moveRight(inputGrid)) !== JSON.stringify(inputGrid)) {
+    if (
+      JSON.stringify(moveRight(inputGrid).moveRightGrid) !==
+      JSON.stringify(inputGrid)
+    ) {
       return false;
     }
-    if (JSON.stringify(moveUp(inputGrid)) !== JSON.stringify(inputGrid)) {
+    if (
+      JSON.stringify(moveUp(inputGrid).moveUpGrid) !== JSON.stringify(inputGrid)
+    ) {
       return false;
     }
-    if (JSON.stringify(moveDown(inputGrid)) !== JSON.stringify(inputGrid)) {
+    if (
+      JSON.stringify(moveDown(inputGrid).moveDownGrid) !==
+      JSON.stringify(inputGrid)
+    ) {
       return false;
     }
     return true;
@@ -234,9 +256,11 @@ function App() {
       switch (where) {
         case 'left':
           const moveLeftGrid = moveLeft(grid);
-          if (JSON.stringify(grid) !== JSON.stringify(moveLeftGrid)) {
+          if (
+            JSON.stringify(grid) !== JSON.stringify(moveLeftGrid.moveLeftGrid)
+          ) {
             // 여기에 들어와있다는 것은 반드시 빈칸이 존재한다는 것을 의미한다.
-            const newLeftGrid = pushNumber(moveLeftGrid);
+            const newLeftGrid = pushNumber(moveLeftGrid.moveLeftGrid);
 
             if (isGameOver(newLeftGrid)) {
               setGameOver(true);
@@ -246,9 +270,11 @@ function App() {
           break;
         case 'right':
           const moveRightGrid = moveRight(grid);
-          if (JSON.stringify(grid) !== JSON.stringify(moveRightGrid)) {
+          if (
+            JSON.stringify(grid) !== JSON.stringify(moveRightGrid.moveRightGrid)
+          ) {
             // 여기에 들어와있다는 것은 반드시 빈칸이 존재한다는 것을 의미한다.
-            const newRightGrid = pushNumber(moveRightGrid);
+            const newRightGrid = pushNumber(moveRightGrid.moveRightGrid);
 
             if (isGameOver(newRightGrid)) {
               setGameOver(true);
@@ -258,9 +284,9 @@ function App() {
           break;
         case 'up':
           const moveUpGrid = moveUp(grid);
-          if (JSON.stringify(grid) !== JSON.stringify(moveUpGrid)) {
+          if (JSON.stringify(grid) !== JSON.stringify(moveUpGrid.moveUpGrid)) {
             // 여기에 들어와있다는 것은 반드시 빈칸이 존재한다는 것을 의미한다.
-            const newUpGrid = pushNumber(moveUpGrid);
+            const newUpGrid = pushNumber(moveUpGrid.moveUpGrid);
 
             if (isGameOver(newUpGrid)) {
               setGameOver(true);
@@ -270,9 +296,11 @@ function App() {
           break;
         case 'down':
           const moveDownGrid = moveDown(grid);
-          if (JSON.stringify(grid) !== JSON.stringify(moveDownGrid)) {
+          if (
+            JSON.stringify(grid) !== JSON.stringify(moveDownGrid.moveDownGrid)
+          ) {
             // 여기에 들어와있다는 것은 반드시 빈칸이 존재한다는 것을 의미한다.
-            const newDownGrid = pushNumber(moveDownGrid);
+            const newDownGrid = pushNumber(moveDownGrid.moveDownGrid);
 
             if (isGameOver(newDownGrid)) {
               setGameOver(true);
@@ -289,6 +317,7 @@ function App() {
     <>
       <Board>
         <div onClick={() => initGrid()}>retry</div>
+        <div>{score}</div>
         {grid.map((row, rowIndex) => (
           <div style={{ display: 'flex' }} key={`rowIndex-${rowIndex}`}>
             {row.map((item, itemIndex) => (
