@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 
 // 해야할 것
+// css
 // score 구현
-// gameover시 알림
 // 화살표 이동 및 가능하다면 스와이프 이동 구현
 // retry 버튼
 // 파일 쪼개기
@@ -55,6 +55,9 @@ function App() {
       [0, 0, 0, 0],
       [0, 0, 0, 0],
     ];
+    if (gameOver === true) {
+      setGameOver(false);
+    }
 
     // 처음에 2번 넣는다.
     newGrid = pushNumber(pushNumber(newGrid));
@@ -386,9 +389,7 @@ function App() {
   };
 
   const playGame = (where: string) => {
-    if (gameOver) {
-      alert('Game Over');
-    } else {
+    if (gameOver === false) {
       switch (where) {
         case 'left':
           const moveLeftGrid = moveLeft(grid);
@@ -446,6 +447,7 @@ function App() {
   return (
     <>
       <Board>
+        <div onClick={() => initGrid()}>retry</div>
         {grid.map((row, rowIndex) => (
           <div style={{ display: 'flex' }} key={`rowIndex-${rowIndex}`}>
             {row.map((item, itemIndex) => (
