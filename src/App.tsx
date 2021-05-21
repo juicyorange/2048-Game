@@ -5,7 +5,7 @@ import './App.css';
 
 // 해야할 것
 // css
-// score 구현 ( 시간 남으면 dynamodb 써서 간단하게 점수 저장하게? )
+// dynamodb 써서 간단하게 점수 저장?  - 시간 남는다면
 // 화살표 이동 및 가능하다면 스와이프 이동 구현
 // 파일 쪼개기
 // 숫자 색상들
@@ -131,7 +131,7 @@ function App() {
         returnGrid[i][1] = returnGrid[i][2] * 2;
         returnGrid[i][2] = 0;
         returnGrid[i][3] = 0;
-        addScore = returnGrid[i][0] + returnGrid[i][1];
+        addScore = addScore + returnGrid[i][0] + returnGrid[i][1];
       }
       // [4,4,2,0] [4,4,0,0], [4,4,2,4] 의 경우
       else if (returnGrid[i][0] === returnGrid[i][1]) {
@@ -139,20 +139,20 @@ function App() {
         returnGrid[i][1] = returnGrid[i][2];
         returnGrid[i][2] = returnGrid[i][3];
         returnGrid[i][3] = 0;
-        addScore = returnGrid[i][0];
+        addScore = addScore + returnGrid[i][0];
       }
       // [4,2,2,0], [4,2,2,4]
       else if (returnGrid[i][1] === returnGrid[i][2]) {
         returnGrid[i][1] = returnGrid[i][1] * 2;
         returnGrid[i][2] = returnGrid[i][3];
         returnGrid[i][3] = 0;
-        addScore = returnGrid[i][1];
+        addScore = addScore + returnGrid[i][1];
       }
       // [4,2,4,4] 의 경우
       else if (returnGrid[i][2] === returnGrid[i][3]) {
         returnGrid[i][2] = returnGrid[i][2] * 2;
         returnGrid[i][3] = 0;
-        addScore = returnGrid[i][2];
+        addScore = addScore + returnGrid[i][2];
       }
     }
 
@@ -265,6 +265,7 @@ function App() {
             if (isGameOver(newLeftGrid)) {
               setGameOver(true);
             }
+            setScore((prev) => prev + moveLeftGrid.addScore);
             setGrid(newLeftGrid);
           }
           break;
@@ -279,6 +280,7 @@ function App() {
             if (isGameOver(newRightGrid)) {
               setGameOver(true);
             }
+            setScore((prev) => prev + moveRightGrid.addScore);
             setGrid(newRightGrid);
           }
           break;
@@ -291,6 +293,7 @@ function App() {
             if (isGameOver(newUpGrid)) {
               setGameOver(true);
             }
+            setScore((prev) => prev + moveUpGrid.addScore);
             setGrid(newUpGrid);
           }
           break;
@@ -305,6 +308,7 @@ function App() {
             if (isGameOver(newDownGrid)) {
               setGameOver(true);
             }
+            setScore((prev) => prev + moveDownGrid.addScore);
             setGrid(newDownGrid);
           }
           break;
