@@ -46,6 +46,16 @@ function App() {
   const [score, setScore] = useState<number>(0);
   useEffect(() => {
     initGrid();
+    /*
+    const body = document.querySelector('body');
+    (() => {
+      body?.addEventListener('keydown', handleKeyDown);
+      console.log(handleKeyDown);
+    })();
+    return () => {
+      body?.removeEventListener('keydown', handleKeyDown);
+    };
+    */
   }, []);
 
   let myRef: any = React.createRef();
@@ -320,6 +330,23 @@ function App() {
       }
     }
   };
+
+  const handleKeyDown = (e: any) => {
+    const left = 37;
+    const right = 39;
+    const up = 38;
+    const down = 40;
+    console.log(e);
+    if (e.keyCode === left) {
+      playGame('left');
+    } else if (e.keyCode === right) {
+      playGame('right');
+    } else if (e.keyCode === up) {
+      playGame('up');
+    } else if (e.keyCode === down) {
+      playGame('down');
+    }
+  };
   return (
     <>
       <Swipe
@@ -329,7 +356,7 @@ function App() {
         onSwipeUp={() => playGame('up')}
         onSwipeDown={() => playGame('down')}
       >
-        <Board>
+        <Board onKeyDown={handleKeyDown} tabIndex={1}>
           <div onClick={() => initGrid()}>retry</div>
           <div>{score}</div>
           {grid.map((row, rowIndex) => (
