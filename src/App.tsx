@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import * as _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import Swipe from 'react-easy-swipe';
 
 // 해야할 것
 // css
@@ -46,6 +47,8 @@ function App() {
   useEffect(() => {
     initGrid();
   }, []);
+
+  let myRef: any = React.createRef();
 
   const initGrid = () => {
     let newGrid: number[][] = [
@@ -319,28 +322,37 @@ function App() {
   };
   return (
     <>
-      <Board>
-        <div onClick={() => initGrid()}>retry</div>
-        <div>{score}</div>
-        {grid.map((row, rowIndex) => (
-          <div style={{ display: 'flex' }} key={`rowIndex-${rowIndex}`}>
-            {row.map((item, itemIndex) => (
-              <Block
-                key={`itemIndex-${itemIndex}`}
-                style={{
-                  background: item === 2 || item === 4 ? `#645B52` : `#F7F4EF`,
-                }}
-              >
-                {item}
-              </Block>
-            ))}
-          </div>
-        ))}
-        <div onClick={() => playGame('left')}>moveleft-test</div>
-        <div onClick={() => playGame('right')}>moveRight-test</div>
-        <div onClick={() => playGame('up')}>moveUp-test</div>
-        <div onClick={() => playGame('down')}>moveDown-test</div>
-      </Board>
+      <Swipe
+        innerRef={(ref) => (myRef = ref)}
+        onSwipeLeft={() => playGame('left')}
+        onSwipeRight={() => playGame('right')}
+        onSwipeUp={() => playGame('up')}
+        onSwipeDown={() => playGame('down')}
+      >
+        <Board>
+          <div onClick={() => initGrid()}>retry</div>
+          <div>{score}</div>
+          {grid.map((row, rowIndex) => (
+            <div style={{ display: 'flex' }} key={`rowIndex-${rowIndex}`}>
+              {row.map((item, itemIndex) => (
+                <Block
+                  key={`itemIndex-${itemIndex}`}
+                  style={{
+                    background:
+                      item === 2 || item === 4 ? `#645B52` : `#F7F4EF`,
+                  }}
+                >
+                  {item}
+                </Block>
+              ))}
+            </div>
+          ))}
+          <div onClick={() => playGame('left')}>moveleft-test</div>
+          <div onClick={() => playGame('right')}>moveRight-test</div>
+          <div onClick={() => playGame('up')}>moveUp-test</div>
+          <div onClick={() => playGame('down')}>moveDown-test</div>
+        </Board>
+      </Swipe>
       <p>{gameOver ? 'Game Over!! push retry' : ''}</p>
     </>
   );
