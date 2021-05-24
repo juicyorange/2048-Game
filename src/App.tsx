@@ -7,9 +7,7 @@ import Swipe from 'react-easy-swipe';
 // 해야할 것
 // css
 // dynamodb 써서 간단하게 점수 저장?  - 시간 남는다면
-// 화살표 이동 및 가능하다면 스와이프 이동 구현
 // 파일 쪼개기
-// 숫자 색상들
 const Board = styled.div`
   background: #ad9d8f;
   width: max-content;
@@ -30,6 +28,46 @@ const Block = styled.div`
   font-size: 45px;
   font-weight: 800;
   color: white;
+  padding: 5px;
+`;
+
+const GameName = styled.h1`
+  font-size: 50px;
+  font-weight: bold;
+  margin: 0px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const Score = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom : 3px
+  padding-top: 7px;
+  padding-botton: 7px;
+  padding-left: 10px;
+  padding-right: 10px;
+  background: #846f5b;
+  color: #f8f5f0;
+  width: 50px;
+  font-weight: 900;
+  margin-left: auto;
+  margin-bottom: auto;
+`;
+
+const Retry = styled.div`
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  background: #846f5b;
+  color: #f8f5f0;
+  width: 50px;
+  border-radius: 7px;
+  font-weight: 900;
+  margin-left: auto;
+  margin-bottom: auto;
+  cursor: pointer;
 `;
 
 function App() {
@@ -265,6 +303,7 @@ function App() {
   };
 
   const playGame = (where: string) => {
+    console.log(where);
     if (gameOver === false) {
       switch (where) {
         case 'left':
@@ -349,40 +388,80 @@ function App() {
   };
   return (
     <>
-      <Swipe
-        innerRef={(ref) => (myRef = ref)}
-        onSwipeLeft={() => playGame('left')}
-        onSwipeRight={() => playGame('right')}
-        onSwipeUp={() => playGame('up')}
-        onSwipeDown={() => playGame('down')}
-      >
-        <Board onKeyDown={handleKeyDown} tabIndex={1}>
-          <div onClick={() => initGrid()}>retry</div>
-          <div>{score}</div>
+      <Board onKeyDown={handleKeyDown} tabIndex={1}>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <GameName>MY 2048</GameName>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <Score>
+              score<br></br>
+              {score}
+            </Score>
+          </div>
+        </div>
+        <Retry onClick={() => initGrid()}>retry</Retry>
+        <Swipe
+          innerRef={(ref) => (myRef = ref)}
+          onSwipeDown={() => playGame('down')}
+          onSwipeLeft={() => playGame('left')}
+          onSwipeRight={() => playGame('right')}
+          onSwipeUp={() => playGame('up')}
+        >
           {grid.map((row, rowIndex) => (
             <div style={{ display: 'flex' }} key={`rowIndex-${rowIndex}`}>
-              {row.map((item, itemIndex) => (
+              {row.map((item: any, itemIndex) => (
                 <Block
                   key={`itemIndex-${itemIndex}`}
+                  color={item}
                   style={{
-                    background:
-                      item === 2 || item === 4 ? `#645B52` : `#F7F4EF`,
+                    background: getColors(item),
+                    color: item === 2 || item === 4 ? `#645B52` : `#F7F4EF`,
                   }}
                 >
-                  {item}
+                  {item ? item : ''}
                 </Block>
               ))}
             </div>
           ))}
-          <div onClick={() => playGame('left')}>moveleft-test</div>
-          <div onClick={() => playGame('right')}>moveRight-test</div>
-          <div onClick={() => playGame('up')}>moveUp-test</div>
-          <div onClick={() => playGame('down')}>moveDown-test</div>
-        </Board>
-      </Swipe>
+        </Swipe>
+      </Board>
       <p>{gameOver ? 'Game Over!! push retry' : ''}</p>
     </>
   );
 }
+
+const getColors = (num: any) => {
+  switch (num) {
+    case 2:
+      return '#EDE4DA';
+    case 4:
+      return '#EEE1C9';
+    case 8:
+      return '#F3B279';
+    case 16:
+      return '#F79563';
+    case 32:
+      return '#F2654F';
+    case 64:
+      return '#F75F3B';
+    case 128:
+      return '#EDD073';
+    case 256:
+      return '#EECC61';
+    case 512:
+      return '#EDC950';
+    case 1024:
+      return '#E8BB31';
+    case 2048:
+      return '#E7B723';
+    default:
+      return '#C2B3A3';
+  }
+};
 
 export default App;
