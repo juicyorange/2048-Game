@@ -46,10 +46,16 @@ const App: React.FC = () => {
   const [best, setBest] = useState<number>(0);
 
   useEffect(() => {
-    initGrid();
+    let newGrid: number[][] = [
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+    ];
+    setScore(0);
+    newGrid = pushNumber(pushNumber(newGrid));
+    setGrid(newGrid);
   }, []);
-
-  let myRef: any = React.createRef();
 
   const initGrid = () => {
     let newGrid: number[][] = [
@@ -226,7 +232,7 @@ const App: React.FC = () => {
           </div>
         </div>
         <Retry onClick={() => initGrid()}>retry</Retry>
-        <Swipe innerRef={(ref) => (myRef = ref)} onSwipeMove={onSwipeMove}>
+        <Swipe innerRef={(ref) => ref} onSwipeMove={onSwipeMove}>
           {grid.map((row, rowIndex) => (
             <div style={{ display: 'flex' }} key={`rowIndex-${rowIndex}`}>
               {row.map((item: any, itemIndex) => (
