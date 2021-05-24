@@ -303,7 +303,6 @@ function App() {
   };
 
   const playGame = (where: string) => {
-    console.log(where);
     if (gameOver === false) {
       switch (where) {
         case 'left':
@@ -386,6 +385,24 @@ function App() {
       playGame('down');
     }
   };
+
+  const onSwipeMove = (position: any) => {
+    console.log(position.x);
+    console.log(position.y);
+    if (Math.abs(position.x) > Math.abs(position.y)) {
+      if (position.x > 100) {
+        playGame('right');
+      } else if (position.x < -100) {
+        playGame('left');
+      }
+    } else {
+      if (position.y < -100) {
+        playGame('up');
+      } else if (position.y > 100) {
+        playGame('down');
+      }
+    }
+  };
   return (
     <>
       <Board onKeyDown={handleKeyDown} tabIndex={1}>
@@ -405,13 +422,7 @@ function App() {
           </div>
         </div>
         <Retry onClick={() => initGrid()}>retry</Retry>
-        <Swipe
-          innerRef={(ref) => (myRef = ref)}
-          onSwipeDown={() => playGame('down')}
-          onSwipeLeft={() => playGame('left')}
-          onSwipeRight={() => playGame('right')}
-          onSwipeUp={() => playGame('up')}
-        >
+        <Swipe innerRef={(ref) => (myRef = ref)} onSwipeMove={onSwipeMove}>
           {grid.map((row, rowIndex) => (
             <div style={{ display: 'flex' }} key={`rowIndex-${rowIndex}`}>
               {row.map((item: any, itemIndex) => (
