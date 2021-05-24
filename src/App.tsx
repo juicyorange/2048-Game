@@ -5,9 +5,6 @@ import './App.css';
 import Swipe from 'react-easy-swipe';
 
 // 해야할 것
-// css
-// dynamodb 써서 간단하게 점수 저장?  - 시간 남는다면
-// 파일 쪼개기
 const Board = styled.div`
   background: #ad9d8f;
   width: max-content;
@@ -52,7 +49,7 @@ const Score = styled.div`
   color: #f8f5f0;
   width: 50px;
   font-weight: 900;
-  margin-left: auto;
+  margin-left: 5px;
   margin-bottom: auto;
 `;
 
@@ -82,6 +79,7 @@ function App() {
   ]);
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
+  const [best, setBest] = useState<number>(0);
   useEffect(() => {
     initGrid();
     /*
@@ -299,6 +297,7 @@ function App() {
     ) {
       return false;
     }
+
     return true;
   };
 
@@ -315,6 +314,9 @@ function App() {
 
             if (isGameOver(newLeftGrid)) {
               setGameOver(true);
+              if (score > best) {
+                setBest(score);
+              }
             }
             setScore((prev) => prev + moveLeftGrid.addScore);
             setGrid(newLeftGrid);
@@ -329,6 +331,9 @@ function App() {
             const newRightGrid = pushNumber(moveRightGrid.moveRightGrid);
 
             if (isGameOver(newRightGrid)) {
+              if (score > best) {
+                setBest(score);
+              }
               setGameOver(true);
             }
             setScore((prev) => prev + moveRightGrid.addScore);
@@ -343,6 +348,9 @@ function App() {
 
             if (isGameOver(newUpGrid)) {
               setGameOver(true);
+              if (score > best) {
+                setBest(score);
+              }
             }
             setScore((prev) => prev + moveUpGrid.addScore);
             setGrid(newUpGrid);
@@ -358,6 +366,9 @@ function App() {
 
             if (isGameOver(newDownGrid)) {
               setGameOver(true);
+              if (score > best) {
+                setBest(score);
+              }
             }
             setScore((prev) => prev + moveDownGrid.addScore);
             setGrid(newDownGrid);
@@ -418,6 +429,10 @@ function App() {
             <Score>
               score<br></br>
               {score}
+            </Score>
+            <Score>
+              best<br></br>
+              {best}
             </Score>
           </div>
         </div>
