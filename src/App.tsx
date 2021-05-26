@@ -201,14 +201,12 @@ const App: React.FC = () => {
 
   const swipeMove = (position: any) => {
     if (swipe === false) {
-      console.log(swipe);
       setSwipe(true);
       onSwipeMove(position);
       setTimeout(() => setSwipe(false), 200);
     }
   };
   const onSwipeMove = (position: any) => {
-    console.log(position);
     if (Math.abs(position.x) > Math.abs(position.y)) {
       if (position.x > 0) {
         playGame('right');

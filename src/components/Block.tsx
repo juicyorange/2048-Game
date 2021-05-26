@@ -57,6 +57,10 @@ const getColors = (num: any) => {
       return '#E8BB31';
     case 2048:
       return '#E7B723';
+    case 4096:
+      return '#2385D0';
+    case 8192:
+      return '#000000';
     default:
       return '#C2B3A3';
   }
