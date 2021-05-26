@@ -44,6 +44,7 @@ const App: React.FC = () => {
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
   const [best, setBest] = useState<number>(0);
+  const [swipe, setSwipe] = useState<boolean>(false);
 
   useEffect(() => {
     let newGrid: number[][] = [
@@ -68,7 +69,7 @@ const App: React.FC = () => {
       setGameOver(false);
     }
     setScore(0);
-
+    setSwipe(false);
     // 처음에 2번 넣는다.
     newGrid = pushNumber(pushNumber(newGrid));
     setGrid(newGrid);
@@ -198,17 +199,26 @@ const App: React.FC = () => {
     }
   };
 
+  const swipeMove = (position: any) => {
+    if (swipe === false) {
+      console.log(swipe);
+      setSwipe(true);
+      onSwipeMove(position);
+      setTimeout(() => setSwipe(false), 200);
+    }
+  };
   const onSwipeMove = (position: any) => {
+    console.log(position);
     if (Math.abs(position.x) > Math.abs(position.y)) {
-      if (position.x > 100) {
+      if (position.x > 0) {
         playGame('right');
-      } else if (position.x < -100) {
+      } else if (position.x < 0) {
         playGame('left');
       }
     } else {
-      if (position.y < -100) {
+      if (position.y < 0) {
         playGame('up');
-      } else if (position.y > 100) {
+      } else if (position.y > 0) {
         playGame('down');
       }
     }
@@ -232,7 +242,7 @@ const App: React.FC = () => {
           </div>
         </div>
         <Retry onClick={() => initGrid()}>retry</Retry>
-        <Swipe innerRef={(ref) => ref} onSwipeMove={onSwipeMove}>
+        <Swipe innerRef={(ref) => ref} onSwipeMove={swipeMove}>
           {grid.map((row, rowIndex) => (
             <div style={{ display: 'flex' }} key={`rowIndex-${rowIndex}`}>
               {row.map((item: any, itemIndex) => (
